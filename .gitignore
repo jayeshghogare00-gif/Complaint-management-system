@@ -1,0 +1,15 @@
+# Python cache & virtual environment
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.env
+
+# Local database
+*.db
+college_cms.db
+
+# OS generated files
+.DS_Store
+Thumbs.db
