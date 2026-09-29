@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ complaint.tracking_number }} · College CMS{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <a href="{{ url_for('admin_dashboard' if current_user.role=='admin' else 'student_dashboard') }}" class="text-indigo-400 text-sm">← Back to dashboard</a>
+  <div class="glass rounded-3xl p-6 mt-4">
+    <div class="flex flex-wrap gap-2 mb-4">
+      <span class="badge bg-indigo-900 text-indigo-200">{{ complaint.tracking_number }}</span>
+      <span class="badge bg-slate-800">{{ complaint.category }}</span>
+      <span class="badge bg-slate-800">{{ complaint.priority }}</span>
+      <span class="badge bg-emerald-900 text-emerald-200">{{ complaint.status }}</span>
+    </div>
+    <h1 class="text-2xl font-black">{{ complaint.title }}</h1>
+    <p class="text-sm text-slate-500 mt-2">Submitted {{ complaint.created_at.strftime('%d %b %Y, %I:%M %p') }}</p>
+    <div class="mt-6 rounded-2xl bg-slate-950/70 p-5 whitespace-pre-line leading-7">{{ complaint.description }}</div>
+
+    {% if current_user.role == 'admin' %}
+    <div class="mt-5 p-4 rounded-2xl bg-slate-900">
+      <p class="text-xs text-slate-500 uppercase font-bold">Student</p>
+      <p class="font-bold mt-1">{{ complaint.student.name }}</p>
+      <p class="text-sm text-slate-400">{{ complaint.student.roll_number }} · {{ complaint.student.department }} · {{ complaint.student.email }}</p>
+    </div>
+    {% endif %}
+
+    {% if complaint.admin_response %}
+    <div class="mt-5 border border-indigo-900 rounded-2xl p-5">
+      <p class="text-xs text-indigo-300 uppercase font-bold">Admin Response</p>
+      <p class="mt-2 whitespace-pre-line">{{ complaint.admin_response }}</p>
+    </div>
+    {% endif %}
+
+    <div class="mt-6 grid sm:grid-cols-2 gap-3 text-sm">
+      <div class="bg-slate-900 rounded-xl p-3"><span class="text-slate-500">Last updated</span><br><b>{{ complaint.updated_at.strftime('%d %b %Y, %I:%M %p') }}</b></div>
+      <div class="bg-slate-900 rounded-xl p-3"><span class="text-slate-500">Resolved at</span><br><b>{{ complaint.resolved_at.strftime('%d %b %Y, %I:%M %p') if complaint.resolved_at else 'Not resolved' }}</b></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

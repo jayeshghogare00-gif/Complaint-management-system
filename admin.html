@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard · College CMS{% endblock %}
+{% block content %}
+<div class="mb-6 flex flex-wrap items-end justify-between gap-4"><div><p class="text-indigo-400 font-bold text-sm">ADMIN CONSOLE</p><h1 class="text-3xl font-black">Complaint Management</h1><p class="text-slate-400 mt-1">Review, update and resolve student grievances.</p></div><a href="{{ url_for('admin_account') }}" class="btn bg-slate-800 text-slate-200">Account Settings</a></div>
+
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+{% for label,key in [('Total','total'),('Pending','pending'),('In Progress','progress'),('Resolved','resolved'),('Urgent','urgent')] %}
+<div class="glass rounded-2xl p-4"><p class="text-slate-400 text-xs">{{ label }}</p><p class="text-2xl font-black mt-1">{{ stats[key] }}</p></div>
+{% endfor %}
+</div>
+
+<div class="glass rounded-2xl p-4 mb-5 flex flex-col md:flex-row gap-3">
+  <input id="search" class="input" placeholder="Search tracking ID, student, title..." oninput="filterRows()">
+  <select id="statusFilter" class="input md:max-w-xs" onchange="filterRows()">
+    <option value="">All statuses</option>
+    <option>Pending</option><option>In Progress</option><option>Resolved</option><option>Rejected</option>
+  </select>
+</div>
+
+<div class="space-y-4" id="complaintList">
+{% for c in complaints %}
+<article class="complaint glass rounded-2xl p-5" data-search="{{ (c.tracking_number ~ ' ' ~ c.student.name ~ ' ' ~ c.title ~ ' ' ~ c.category)|lower }}" data-status="{{ c.status }}">
+  <div class="flex flex-col lg:flex-row justify-between gap-4">
+    <div class="min-w-0">
+      <div class="flex flex-wrap gap-2 items-center">
+        <a href="{{ url_for('complaint_detail', complaint_id=c.id) }}" class="font-black text-indigo-300">{{ c.tracking_number }}</a>
+        <span class="badge bg-slate-800">{{ c.category }}</span>
+        <span class="badge bg-slate-800">{{ c.priority }}</span>
+        <span class="badge {{ 'bg-emerald-900 text-emerald-200' if c.status=='Resolved' else 'bg-amber-900 text-amber-200' if c.status=='Pending' else 'bg-indigo-900 text-indigo-200' }}">{{ c.status }}</span>
+      </div>
+      <h2 class="text-lg font-black mt-2">{{ c.title }}</h2>
+      <p class="text-sm text-slate-400 mt-1">{{ c.student.name }} · {{ c.student.roll_number }} · {{ c.student.department }}</p>
+      <p class="text-sm text-slate-300 mt-3 whitespace-pre-line">{{ c.description }}</p>
+    </div>
+    <div class="lg:w-80 shrink-0">
+      <form method="post" action="{{ url_for('update_complaint', complaint_id=c.id) }}" class="space-y-2">
+        <select class="input" name="status">
+          {% for s in ['Pending','In Progress','Resolved','Rejected'] %}
+          <option {{ 'selected' if c.status==s else '' }}>{{ s }}</option>
+          {% endfor %}
+        </select>
+        <textarea class="input" name="admin_response" rows="3" placeholder="Admin response / resolution note">{{ c.admin_response or '' }}</textarea>
+        <button class="btn btn-primary w-full">Save Update</button>
+      </form>
+      <form method="post" action="{{ url_for('delete_complaint', complaint_id=c.id) }}" class="mt-2" onsubmit="return confirm('Delete this complaint permanently?')">
+        <button class="btn btn-danger w-full">Delete Complaint</button>
+      </form>
+    </div>
+  </div>
+</article>
+{% else %}
+<div class="glass rounded-2xl p-10 text-center text-slate-400">No complaints found.</div>
+{% endfor %}
+</div>
+
+<script>
+function filterRows(){
+  const q = document.getElementById('search').value.toLowerCase();
+  const status = document.getElementById('statusFilter').value;
+  document.querySelectorAll('.complaint').forEach(row => {
+    const matchesText = row.dataset.search.includes(q);
+    const matchesStatus = !status || row.dataset.status === status;
+    row.style.display = matchesText && matchesStatus ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}
